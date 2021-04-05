@@ -20,7 +20,7 @@ namespace transactionapp
 
         public void ShowDialogText(string text, Form invokingForm)
         {
-            lblDialogText.Text = text;
+            textBoxDlg.Text = text;
             this.Visible = true;
             lastForm = invokingForm;
             lastForm.Enabled = false;

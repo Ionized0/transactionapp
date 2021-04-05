@@ -32,10 +32,12 @@ namespace transactionapp
                 conn.Open();
                 loggedIn = true;
                 ds.ShowDialogText("Successfully logged in!", this);
-                
+                HelperFunctions.CreateLog(HelperFunctions.ActionType.Connect, HelperFunctions.ActionSeverity.Success, "Login successful.");
+
             } catch (Exception ex)
             {
                 ds.ShowDialogText($"Error encountered during login: {ex.Message}.", this);
+                HelperFunctions.CreateLog(HelperFunctions.ActionType.Connect, HelperFunctions.ActionSeverity.Error, "Login unsuccessful.");
             }
 
             return loggedIn;
