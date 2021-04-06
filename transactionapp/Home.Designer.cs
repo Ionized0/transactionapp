@@ -29,10 +29,6 @@ namespace transactionapp
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
-            "",
-            "asdf asfduiaff",
-            "item 3"}, -1);
             this.btnConnect = new System.Windows.Forms.Button();
             this.lblConnectionStatus = new System.Windows.Forms.Label();
             this.btnImportCSV = new System.Windows.Forms.Button();
@@ -86,8 +82,6 @@ namespace transactionapp
             this.action,
             this.description});
             this.listViewActionLog.HideSelection = false;
-            this.listViewActionLog.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1});
             this.listViewActionLog.Location = new System.Drawing.Point(56, 257);
             this.listViewActionLog.Name = "listViewActionLog";
             this.listViewActionLog.Size = new System.Drawing.Size(692, 164);
@@ -98,7 +92,7 @@ namespace transactionapp
             // time
             // 
             this.time.Text = "Time";
-            this.time.Width = 95;
+            this.time.Width = 140;
             // 
             // severity
             // 
