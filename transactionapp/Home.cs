@@ -32,12 +32,12 @@ namespace transactionapp
                 conn.Open();
                 loggedIn = true;
                 ds.ShowDialogText("Successfully logged in!", this);
-                HelperFunctions.CreateLog(HelperFunctions.ActionType.Connect, HelperFunctions.ActionSeverity.Success, "Login successful.");
+                HelperFunctions.CreateLog(HelperFunctions.ActionType.Connect, HelperFunctions.ActionSeverity.Success, "Login successful.", conn);
 
             } catch (Exception ex)
             {
                 ds.ShowDialogText($"Error encountered during login: {ex.Message}.", this);
-                HelperFunctions.CreateLog(HelperFunctions.ActionType.Connect, HelperFunctions.ActionSeverity.Error, "Login unsuccessful.");
+                HelperFunctions.CreateLog(HelperFunctions.ActionType.Connect, HelperFunctions.ActionSeverity.Error, "Login unsuccessful.", conn);
             }
 
             return loggedIn;
@@ -61,12 +61,18 @@ namespace transactionapp
 
         private void openFileDialog_FileOk(object sender, CancelEventArgs e)
         {
-
+            string fullPath = openFileDialog.FileName;
+            CSVImporter importer = new CSVImporter();
+            HelperFunctions.CreateLog(HelperFunctions.ActionType.Import, HelperFunctions.ActionSeverity.Info, $"Determining accessibility and validity of file {fullPath}.", conn);
+            if (importer.IsValidAndAcccessibleFile(fullPath))
+            {
+                importer.InsertDataIntoDB(fullPath);
+            }
         }
         private void btnImportCSV_Click(object sender, EventArgs e)
         {
+            HelperFunctions.CreateLog(HelperFunctions.ActionType.Import, HelperFunctions.ActionSeverity.Info, $"{btnImportCSV.Text} button pressed.", conn);
             openFileDialog.ShowDialog();
-            
         }
     }
 }
