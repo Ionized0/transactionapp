@@ -13,5 +13,9 @@ namespace transactionapp
         {
 
         }
+        public override void InsertDataIntoDB(string fullPath)
+        {
+
+        }
     }
 }
