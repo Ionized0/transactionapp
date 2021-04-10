@@ -10,9 +10,10 @@ namespace transactionapp
 {
     public static class HelperFunctions
     {
+        public static SqlConnection conn;
         private static ListView actionLog;
         public enum ActionSeverity { Success, Error, Info, Warning }
-        public enum ActionType { Initialise, Connect, Import, Edit, View }
+        public enum ActionType { Initialise, Connect, Import, Edit, View, Validate }
         public static string GetConnectionString()
         {
             // Temp vars
@@ -22,7 +23,30 @@ namespace transactionapp
                 , pw = "masterpw";
             return $"Server={server};Database={db};User Id='{userid}';Password={pw};";
         }
-        public static void CreateLog(ActionType actionType, ActionSeverity actionSeverity, string description, SqlConnection conn)
+        public static List<Tuple<bool, string>> Login()
+        {
+            List<Tuple<bool, string>> itemList = new List<Tuple<bool, string>>();
+            string returnText = "";
+            bool loggedIn = false;
+
+            conn = new SqlConnection(HelperFunctions.GetConnectionString());
+            try
+            {
+                conn.Open();
+                loggedIn = true;
+                returnText = "Login successful.";
+            }
+            catch (Exception ex)
+            {
+                loggedIn = false;
+                returnText = $"Error encountered during login: {ex.Message}.";
+            }
+
+            itemList.Add(new Tuple<bool, string>(loggedIn, returnText));
+
+            return itemList;
+        }
+        public static void CreateLog(ActionType actionType, ActionSeverity actionSeverity, string description)
         {
             if (actionLog != null)
             {
@@ -77,7 +101,7 @@ namespace transactionapp
             set
             {
                 actionLog = value;
-                CreateLog(ActionType.Initialise, ActionSeverity.Success, $"Log form has been initialised.", null);
+                CreateLog(ActionType.Initialise, ActionSeverity.Success, $"Log form has been initialised.");
             }
         }
     }

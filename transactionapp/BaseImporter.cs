@@ -12,7 +12,12 @@ namespace transactionapp
     {
         public static readonly int waitTime = 6000; // ms
         public static readonly int maxAttempts = 5;
-        public bool IsValidAndAcccessibleFile(string fullPath)
+        protected string fullPath;
+        public BaseImporter(string fileToImport)
+        {
+            fullPath = fileToImport;
+        }
+        public bool IsAcccessibleFile()
         {
             int attemptNum = 0;
             bool accessible = false;
@@ -32,9 +37,11 @@ namespace transactionapp
                 }
                 attemptNum++;
             }
+            HelperFunctions.CreateLog(HelperFunctions.ActionType.Validate, accessible ? HelperFunctions.ActionSeverity.Success : HelperFunctions.ActionSeverity.Error, $"File is {(accessible ? "" : "not ")}accessible");
             return accessible;
         }
+        abstract public bool HasValidData();
 
-        abstract public void InsertDataIntoDB(string fullPath);
+        abstract public void InsertDataIntoDB();
     }
 }

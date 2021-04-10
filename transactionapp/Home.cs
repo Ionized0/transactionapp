@@ -13,7 +13,6 @@ namespace transactionapp
 {
     public partial class Home : Form
     {
-        private SqlConnection conn;
         private DialogScreen ds;
         public Home()
         {
@@ -22,30 +21,9 @@ namespace transactionapp
             HelperFunctions.ActionLog = listViewActionLog;
         }
 
-        private bool Login()
-        {
-            bool loggedIn = false;
-
-            conn = new SqlConnection(HelperFunctions.GetConnectionString());
-            try
-            {
-                conn.Open();
-                loggedIn = true;
-                ds.ShowDialogText("Successfully logged in!", this);
-                HelperFunctions.CreateLog(HelperFunctions.ActionType.Connect, HelperFunctions.ActionSeverity.Success, "Login successful.", conn);
-
-            } catch (Exception ex)
-            {
-                ds.ShowDialogText($"Error encountered during login: {ex.Message}.", this);
-                HelperFunctions.CreateLog(HelperFunctions.ActionType.Connect, HelperFunctions.ActionSeverity.Error, "Login unsuccessful.", conn);
-            }
-
-            return loggedIn;
-        }
-
         private void UpdateSQLStatus()
         {
-            lblConnectionStatus.Text = $"Status: {conn.State.ToString()}";
+            lblConnectionStatus.Text = $"Status: {HelperFunctions.conn.State.ToString()}";
         }
 
         private void Home_Load(object sender, EventArgs e)
@@ -55,23 +33,34 @@ namespace transactionapp
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            Login();
+            List<Tuple<bool, string>> returnVals = HelperFunctions.Login();
+            HelperFunctions.ActionSeverity severity;
+            if (!returnVals[0].Item1)
+            {
+                ds.ShowDialogText(returnVals[0].Item2, this);
+                severity = HelperFunctions.ActionSeverity.Error;
+            }
+            else
+            {
+                severity = HelperFunctions.ActionSeverity.Success;
+            }
+            HelperFunctions.CreateLog(HelperFunctions.ActionType.Connect, severity, returnVals[0].Item2);
+            
             UpdateSQLStatus();
         }
 
         private void openFileDialog_FileOk(object sender, CancelEventArgs e)
         {
             string fullPath = openFileDialog.FileName;
-            CSVImporter importer = new CSVImporter();
-            HelperFunctions.CreateLog(HelperFunctions.ActionType.Import, HelperFunctions.ActionSeverity.Info, $"Determining accessibility and validity of file {fullPath}.", conn);
-            if (importer.IsValidAndAcccessibleFile(fullPath))
+            CSVImporter importer = new CSVImporter(fullPath);
+            if (importer.IsAcccessibleFile() && importer.HasValidData())
             {
-                importer.InsertDataIntoDB(fullPath);
+                importer.InsertDataIntoDB();
             }
         }
         private void btnImportCSV_Click(object sender, EventArgs e)
         {
-            HelperFunctions.CreateLog(HelperFunctions.ActionType.Import, HelperFunctions.ActionSeverity.Info, $"{btnImportCSV.Text} button pressed.", conn);
+            HelperFunctions.CreateLog(HelperFunctions.ActionType.Import, HelperFunctions.ActionSeverity.Info, $"{btnImportCSV.Text} button pressed.");
             openFileDialog.ShowDialog();
         }
     }
