@@ -64,8 +64,7 @@ namespace transactionapp
         }
         public static void InsertLogIntoDB(DateTime actionDate, ActionType actionType, ActionSeverity actionSeverity, string description, SqlConnection conn)
         {
-            if (conn == null) return;
-            if (conn.State == System.Data.ConnectionState.Open)
+            if (ConnectionIsOpen())
             {
                 SqlCommand comm = new SqlCommand();
                 comm.CommandText = 
@@ -103,6 +102,11 @@ namespace transactionapp
                 actionLog = value;
                 CreateLog(ActionType.Initialise, ActionSeverity.Success, $"Log form has been initialised.");
             }
+        }
+        public static bool ConnectionIsOpen()
+        {
+            if (conn == null) return false;
+            return conn.State == System.Data.ConnectionState.Open;
         }
     }
 }

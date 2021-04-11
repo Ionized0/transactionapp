@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Data.SqlClient;
 
 namespace transactionapp
 {
@@ -15,6 +16,13 @@ namespace transactionapp
         public override string InsertDataIntoDB()
         {
             string response = "";
+
+            using (SqlConnection conn = HelperFunctions.conn)
+            {
+
+            }
+
+            return response;
         }
         public override bool HasValidData()
         {
