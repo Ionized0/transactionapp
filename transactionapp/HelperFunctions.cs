@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
+using System.Security.Cryptography;
 
 namespace transactionapp
 {
@@ -14,6 +16,7 @@ namespace transactionapp
         private static ListView actionLog;
         public enum ActionSeverity { Success, Error, Info, Warning }
         public enum ActionType { Initialise, Connect, Import, Edit, View, Validate }
+        public enum ImportType { CSV, QIF, OFX }
         public static string GetConnectionString()
         {
             // Temp vars
@@ -89,6 +92,17 @@ namespace transactionapp
                 comm.Connection = conn;
 
                 comm.ExecuteNonQuery();
+            }
+        }
+        public static string GetMD5Checksum(string fullPath)
+        {
+            using (var md5 = MD5.Create())
+            {
+                using (var stream = File.OpenRead(fullPath))
+                {
+                    var hash = md5.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                }
             }
         }
         public static ListView ActionLog
