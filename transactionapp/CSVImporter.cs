@@ -29,7 +29,7 @@ namespace transactionapp
                 comm.CommandText +=
                     "INSERT INTO Import (FilePath, ImportDate, UserID, MD5Checksum) " + Environment.NewLine +
                     "VALUES (@FilePath, @ImportDate, @UserID, @MD5Checksum) " + Environment.NewLine +
-                    "SELECT TOP 1 ID FROM Import WHERE FilePath = @FilePath AND " + Environment.NewLine + 
+                    "SELECT TOP 1 isnull(ID, 0) FROM Import WHERE FilePath = @FilePath AND " + Environment.NewLine + 
                     "UserID = @UserID AND MD5Checksum = @MD5Checksum AND ImportDate = @ImportDate ";
 
                 comm.Parameters.Add("@FilePath", System.Data.SqlDbType.NVarChar);
@@ -44,40 +44,53 @@ namespace transactionapp
                 comm.Parameters.Add("@MD5Checksum", System.Data.SqlDbType.NVarChar);
                 comm.Parameters["@MD5Checksum"].Value = HelperFunctions.GetMD5Checksum(fullPath);
 
+                // Obtain ID
+                int recID = 0;
                 using (SqlDataReader reader = comm.ExecuteReader())
                 {
-
+                    IDataRecord rec = (IDataRecord)reader;
+                    recID = (int)rec[0];
                 }
 
-                using (StreamReader sr = new StreamReader(fullPath))
+                if (recID == 0)
                 {
-                    string line;
-                    int lineCount = 0;
-                    string[] vals = { };
-
-                    string dateString;
-                    string tranDesc;
-                    string credits;
-                    string debits;
-                    string bankBalance;
-
-                    while (!sr.EndOfStream)
+                    response = "Failed to insert import record.";
+                } else
+                {
+                    using (StreamReader sr = new StreamReader(fullPath))
                     {
-                        line = sr.ReadLine();
-                        lineCount++;
-                        vals = line.Split(',');
-                        // Variable assignment
-                        dateString = vals[0];
-                        tranDesc = vals[1];
-                        credits = vals[2];
-                        debits = vals[3];
-                        bankBalance = vals[4];
+                        string line;
+                        int lineCount = 0;
+                        string l = "";
+                        string[] vals = { };
 
-                        comm.CommandText +=
-                            "INSERT INTO Transaction () " + Environment.NewLine +
-                            " " + Environment.NewLine;
+                        string dateString;
+                        string tranDesc;
+                        string credits;
+                        string debits;
+                        string bankBalance;
+
+                        while (!sr.EndOfStream)
+                        {
+                            line = sr.ReadLine();
+                            lineCount++;
+                            l = lineCount.ToString();   // Short var name to insert command as string
+
+                            vals = line.Split(',');
+                            // Variable assignment
+                            dateString = vals[0];
+                            tranDesc = vals[1];
+                            credits = vals[2];
+                            debits = vals[3];
+                            bankBalance = vals[4];
+
+                            comm.CommandText +=
+                                "INSERT INTO Transaction (CategoryID, Description, Date, BankBalance, BankAccountID, Credit, Debit, ImportID) " + Environment.NewLine +
+                                $"VALUES (NULL, @Description{l}, @Date{l}, @BankBalance{l}, @BankAccountID{l}, @Credit{l}, @Debit{l}, ImportID{l}) " + Environment.NewLine;
+                        }
                     }
                 }
+
             }
 
             return response;
