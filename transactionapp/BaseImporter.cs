@@ -42,6 +42,6 @@ namespace transactionapp
         }
         abstract public bool HasValidData();
 
-        abstract public string InsertDataIntoDB();
+        abstract public List<string> InsertDataIntoDB();
     }
 }

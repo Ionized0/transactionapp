@@ -14,9 +14,9 @@ namespace transactionapp
         public CSVImporter(string fileToImport): base(fileToImport)
         {
         }
-        public override string InsertDataIntoDB()
+        public override List<string> InsertDataIntoDB()
         {
-            string response = "";
+            List<string> responses = new List<string>();
 
             using (SqlConnection conn = HelperFunctions.conn)
             {
@@ -54,7 +54,7 @@ namespace transactionapp
 
                 if (recID == 0)
                 {
-                    response = "Failed to insert import record.";
+                    responses.Add("Failed to insert import record.");
                 } else
                 {
                     using (StreamReader sr = new StreamReader(fullPath))
@@ -65,6 +65,7 @@ namespace transactionapp
                         string[] vals = { };
 
                         string dateString;
+                        DateTime tranDate;
                         string tranDesc;
                         string credits;
                         string debits;
@@ -79,6 +80,11 @@ namespace transactionapp
                             vals = line.Split(',');
                             // Variable assignment
                             dateString = vals[0];
+                            if (!DateTime.TryParse(dateString, out tranDate))
+                            {
+                                responses.Add($"Failed to process line {l} due to invalid date {dateString}.");
+                                continue;
+                            };
                             tranDesc = vals[1];
                             credits = vals[2];
                             debits = vals[3];
@@ -87,13 +93,22 @@ namespace transactionapp
                             comm.CommandText +=
                                 "INSERT INTO Transaction (CategoryID, Description, Date, BankBalance, BankAccountID, Credit, Debit, ImportID) " + Environment.NewLine +
                                 $"VALUES (NULL, @Description{l}, @Date{l}, @BankBalance{l}, @BankAccountID{l}, @Credit{l}, @Debit{l}, ImportID{l}) " + Environment.NewLine;
+
+                            comm.Parameters.Add($"@Description{l}", System.Data.SqlDbType.NVarChar);
+                            comm.Parameters[$"@Description{l}"].Value = tranDesc;
+
+                            comm.Parameters.Add($"@Date{l}", System.Data.SqlDbType.DateTime);
+                            comm.Parameters[$"@Date{l}"].Value = dateString;
+
+                            comm.Parameters.Add($"@BankBalance{l}", System.Data.SqlDbType.Decimal);
+                            comm.Parameters[$"@BankBalance{l}"].Value = bankBalance;
                         }
                     }
                 }
 
             }
 
-            return response;
+            return responses;
         }
         public override bool HasValidData()
         {
